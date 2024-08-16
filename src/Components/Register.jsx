@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Register = (props) => {
   const [username, setUsername] = useState('');
@@ -8,6 +9,9 @@ const Register = (props) => {
   const [csrfToken, setCsrfToken] = useState('');
   const [avatar, setAvatar] = useState(''); // Ny state för avatar
   const [error, setError] = useState('');
+  
+  // useNavigate hook för omdirigering
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCsrfToken = async () => {
@@ -37,10 +41,10 @@ const Register = (props) => {
 
       if (response.status === 200) {
         console.log('Registration successful:', response.data);
-        // Hantera framgångsrik registrering
+        // Omdirigera till login-komponenten
+        navigate('/login'); // Eller använd navigate(0) för att ladda om sidan
       } else {
         console.log('Registration failed:', response.data);
-        // Hantera registreringsfel
       }
     } catch (error) {
       console.error('Error:', error);
