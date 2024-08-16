@@ -4,12 +4,8 @@
 
 .sidebar .nav {
     padding: 0px !important;
-
 }
 
 .sidebar ul li a:hover {
-    background-color: blue;
+    background-color: rgb(213, 5, 213);
 }
-
-
-

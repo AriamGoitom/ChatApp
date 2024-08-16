@@ -17,7 +17,6 @@ function App() {
   const toggleForm = (forName) => {
     setCurrentForm(forName);
   }
-  /* const [count, setCount] = useState(0) */
 
   return (
     <div className="App">
@@ -30,9 +29,8 @@ function App() {
 
         <div>
           <Routes>
-            {/* <Route path="/" element={<Dashboard  />}></Route> */}
-            <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/chat" element={<Chat />} /> {/* Rutt för Chat */}
             <Route path="/" element={<Login />} /> {/* Standardrutt */}
           </Routes>

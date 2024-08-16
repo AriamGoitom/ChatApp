@@ -17,7 +17,7 @@
 }
 
 .sidebar {
-    margin-right: 300px
+    margin-right: 315px;
 }
 
 @media screen and (min-width: 600px) {
@@ -52,6 +52,10 @@ button {
 
 .link-btn {
     background: none;
-    color: white;
+    color: rgb(163, 159, 159);
     text-decoration: underline;
+}
+
+.nav-item {
+    color:#7439db
 }

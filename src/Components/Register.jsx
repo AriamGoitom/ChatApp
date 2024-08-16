@@ -54,15 +54,15 @@ const Register = (props) => {
 
   return (
     <div className="auth-form-container">
-      <h2>Register</h2>
+      <h2>R e g i s t e r</h2>
       <form className="register-form" onSubmit={handleSubmit}>
-        <label htmlFor="username">Username</label>
+        <label htmlFor="username">Username👼🏽</label>
         <input value={username} onChange={(e) => setUsername(e.target.value)} type="text" placeholder="username" id="username" name="username" />
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email">Email💌</label>
         <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="youremail@gmail.com" id="email" name="email" />
-        <label htmlFor="password">Password</label>
-        <input value={pass} onChange={(e) => setPass(e.target.value)} type="password" placeholder="***" id="password" name="password" />
-        <label htmlFor="avatar">Avatar URL</label>
+        <label htmlFor="password">Password🔐</label>
+        <input value={pass} onChange={(e) => setPass(e.target.value)} type="password" placeholder="*******" id="password" name="password" />
+        <label htmlFor="avatar">Choose Avatar</label>
         <input value={avatar} onChange={(e) => setAvatar(e.target.value)} type="text" placeholder="https://i.pravatar.cc/200" id="avatar" name="avatar" />
         <button type="submit">Register</button>
       </form>
