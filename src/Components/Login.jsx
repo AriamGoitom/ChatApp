@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const Login = (props) => {
+const Login = ({ setIsLoggedIn }) => {
   const [username, setUsername] = useState('');
   const [pass, setPass] = useState('');
   const [csrfToken, setCsrfToken] = useState('');
-  const navigate = useNavigate(); // Hook för att navigera
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCsrfToken = async () => {
@@ -32,11 +32,9 @@ const Login = (props) => {
       });
 
       if (response.status === 200) {
-        // Spara token i local storage
         localStorage.setItem('token', response.data.token);
-        // Omdirigera till chatkomponenten
-        navigate('/chat');
-
+        setIsLoggedIn(true); // Uppdatera inloggningsstatus
+        navigate('/chat'); // Omdirigera till chatkomponenten
         console.log('User logged in', response.data);
       } else {
         console.log('Error with login', response.data);
