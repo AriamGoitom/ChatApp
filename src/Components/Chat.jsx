@@ -1,151 +1,136 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import DOMPurify from 'dompurify'; // För att sanera meddelandeinnehåll
-import chatData from './chat.json';
-
-
-
-/* const fakeChat = [
-  "text": "Tja tja, hur mår du?",
-  "avatar": "https://i.pravatar.cc/100?img=14",
-  "username": "Johnny",
-  "conversationId": null
-},
-{
-  "text": "Hallå!! Svara då!!",
-  "avatar": "https://i.pravatar.cc/100?img=14",
-  "username": "Johnny",
-  "conversationId": null
-},
-{
-  "text": "Sover du eller?! 😴",
-  "avatar": "https://i.pravatar.cc/100?img=14",
-  "username": "Johnny",
-  "conversationId": null
-}
-]; */
+import React, { useState, useEffect, useRef } from "react";
+import DOMPurify from "dompurify";
 
 const Chat = () => {
-  // State för att hålla alla meddelanden
   const [messages, setMessages] = useState([]);
-  // State för att hålla innehållet i ett nytt meddelande
-  const [newMessage, setNewMessage] = useState('');
-  // State för att hålla CSRF-token
-  const [csrfToken, setCsrfToken] = useState('');
-  
-  // Hämtar användarens autentiseringsdata från localStorage
-  const authData = JSON.parse(localStorage.getItem('user'));
+  const [newMessage, setNewMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const endOfMessagesRef = useRef(null); // Reference to scroll to the bottom
 
-  // useEffect som körs vid första renderingen för att hämta CSRF-token
-  useEffect(() => {
-    const fetchCsrfToken = async () => {
-      try {
-        // Gör en begäran för att hämta CSRF-token från servern
-        const response = await axios.patch('https://chatify-api.up.railway.app/csrf');
-        // Sätter CSRF-token i state
-        setCsrfToken(response.data.csrfToken);
-      } catch (error) {
-        // Loggar fel om hämtningen av CSRF-token misslyckas
-        console.error('Failed to fetch CSRF token:', error);
-      }
-    };
-    
-    // Anropar funktionen för att hämta CSRF-token
-    fetchCsrfToken();
-  }, []);
+  const authData = JSON.parse(localStorage.getItem("user"));
+  const token = authData?.token;
+  const username = authData?.username;
+  const avatar = authData?.avatar;
+  const userId = authData?.userId;
 
-  // Hämta meddelanden när komponenten laddas
+  // Fetch messages when the component mounts
   useEffect(() => {
     const fetchMessages = async () => {
+      if (!token) {
+        console.error("No token found in authData");
+        return;
+      }
+      
+      setLoading(true); // Start loading
+
       try {
-        const response = await axios.get('https://chatify-api.up.railway.app/messages', {
-          headers: { 
-            Authorization: `Bearer ${authData.token}`,
-            'X-CSRF-Token': csrfToken
-          },
+        const response = await fetch("https://chatify-api.up.railway.app/messages", {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        // Uppdaterar state med de hämtade meddelandena
-        setMessages(response.data);
+
+        if (response.ok) {
+          const data = await response.json();
+          setMessages(data);
+        } else {
+          setErrorMessage("Failed to fetch messages.");
+          console.error("Failed to fetch messages:", response.statusText);
+        }
       } catch (error) {
-        console.error('Failed to fetch messages:', error);
+        setErrorMessage("Error fetching messages.");
+        console.error("Failed to fetch messages:", error);
+      } finally {
+        setLoading(false); // End loading
       }
     };
-    
-    // Anropar funktionen för att hämta meddelanden
+
     fetchMessages();
-  }, [authData, csrfToken]);
+  }, [token]);
 
-  // Funktion för att skicka ett nytt meddelande
+  // Scroll to the bottom when messages change
+  useEffect(() => {
+    endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Send a new message
   const handleSendMessage = async () => {
-    if (newMessage.trim() === '') return;
+    if (newMessage.trim() === "") return;
 
-    // Sanitering av meddelandet med DOMPurify
     const sanitizedMessage = DOMPurify.sanitize(newMessage);
+    setLoading(true);
 
     try {
-      // Skickar en POST-begäran för att skapa ett nytt meddelande
-      const response = await axios.post(
-        'https://chatify-api.up.railway.app/messages',
-        { content: sanitizedMessage }, // Skickar sanerat meddelandeinnehåll
-        {
-          headers: {
-            Authorization: `Bearer ${authData.token}`,
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': csrfToken,
-          },
-        }
-      );
-      // Uppdaterar meddelandelistan med det nya meddelandet
-      setMessages((prevMessages) => [...prevMessages, response.data]);
-      // Tömmer inputfältet för nya meddelanden
-      setNewMessage('');
+      const response = await fetch("https://chatify-api.up.railway.app/messages", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: sanitizedMessage }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMessages((prevMessages) => [...prevMessages, data]);
+        setNewMessage("");
+      } else {
+        setErrorMessage("Failed to send message.");
+        console.error("Failed to send message:", response.statusText);
+      }
     } catch (error) {
-      console.error('Failed to send message:', error);
+      setErrorMessage("Error sending message.");
+      console.error("Failed to send message:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Funktion för att radera ett meddelande
+  // Delete a message
   const handleDeleteMessage = async (messageId) => {
     try {
-      // Skickar en DELETE-begäran till API:t för att ta bort ett meddelande
-      await axios.delete(`https://chatify-api.up.railway.app/messages/${messageId}`, {
-        headers: {
-          Authorization: `Bearer ${authData.token}`,
-          'X-CSRF-Token': csrfToken,
-        },
+      const response = await fetch(`https://chatify-api.up.railway.app/messages/${messageId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
       });
-      // Filtrerar bort det raderade meddelandet från state
-      setMessages((prevMessages) => prevMessages.filter((msg) => msg.id !== messageId));
+
+      if (response.ok) {
+        setMessages((prevMessages) => prevMessages.filter((msg) => msg.id !== messageId));
+        console.log("Message deleted:", messageId);
+      } else {
+        console.error("Failed to delete message:", response.statusText);
+      }
     } catch (error) {
-      console.error('Failed to delete message:', error);
+      console.error("Failed to delete message:", error);
     }
   };
 
   return (
     <div>
       <h2>Chat</h2>
-      <img src={authData.avatar} alt="Avatar" />
-      <p>{authData.username}</p>
+      {avatar && <img src={avatar} alt="Avatar" />}
+      <p>{username}</p>
+      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
       <div>
-        {/* Visa alla meddelanden */}
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={msg.userId === authData.id ? 'my-message' : 'other-message'}
-            style={{
-              display: 'flex',
-              justifyContent: msg.userId === authData.id ? 'flex-end' : 'flex-start',
-            }}
-          >
-            <div>
-              <p>{msg.text}</p>
-              {/* Visa en "Radera"-knapp endast för användarens egna meddelanden */}
-              {msg.userId === authData.id && (
-                <button onClick={() => handleDeleteMessage(msg.id)}>Delete</button>
-              )}
+        {loading ? (
+          <p>Loading messages...</p>
+        ) : (
+          messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={msg.userId === userId ? "my-message" : "other-message"}
+              style={{ display: "flex", justifyContent: msg.userId === userId ? "flex-end" : "flex-start" }}
+            >
+              <div>
+                {msg.userId !== userId && <img src={msg.avatar || 'https://i.pravatar.cc/100'} alt={msg.username} style={{ width: '30px', borderRadius: '50%' }} />}
+                <p>{msg.text}</p>
+                {msg.userId === userId && (
+                  <button onClick={() => handleDeleteMessage(msg.id)}>Delete</button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
+        <div ref={endOfMessagesRef} /> {/* Scroll to this div */}
       </div>
       <input
         type="text"
@@ -153,10 +138,9 @@ const Chat = () => {
         onChange={(e) => setNewMessage(e.target.value)}
         placeholder="Type a message"
       />
-      <button onClick={handleSendMessage}>Send</button>
+      <button onClick={handleSendMessage} disabled={loading}>Send</button>
     </div>
   );
 };
 
 export default Chat;
-

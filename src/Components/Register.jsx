@@ -7,7 +7,7 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [avatar, setAvatar] = useState('');
-  const [showAvatarSelection, setShowAvatarSelection] = useState(false); // Nytt tillstånd
+  const [showAvatarSelection, setShowAvatarSelection] = useState(false); // New state to manage avatar selection visibility
   const [csrfToken, setCsrfToken] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -26,7 +26,7 @@ const Register = () => {
     const fetchCsrfToken = async () => {
       try {
         const response = await axios.patch('https://chatify-api.up.railway.app/csrf');
-        console.log('Fetched CSRF Token:', response.data.csrfToken); // Debug logg
+        console.log('Fetched CSRF Token:', response.data.csrfToken); // Debug log
         setCsrfToken(response.data.csrfToken);
       } catch (error) {
         console.error('Failed to fetch CSRF token:', error);
@@ -42,7 +42,7 @@ const Register = () => {
     setError('');
     setSuccessMessage('');
 
-    console.log('Sending CSRF Token:', csrfToken); // Debug logg
+    console.log('Sending CSRF Token:', csrfToken); // Debug log
     console.log('Sending Registration Data:', { username, email, password, avatar });
 
     try {
@@ -72,45 +72,37 @@ const Register = () => {
     }
   };
 
-  // Funktion för att hantera avatarval
+  // Function to handle avatar selection
   const handleAvatarSelect = (selectedAvatar) => {
     setAvatar(selectedAvatar);
-    setShowAvatarSelection(false); // Dölj avatarvalet när en avatar är vald
+    setShowAvatarSelection(false); // Hide avatar selection once an avatar is chosen
   };
 
   return (
     <div className="auth-form-container">
       <h2>R e g i s t e r</h2>
       <form className="register-form" onSubmit={handleSubmit}>
-        <label htmlFor="username">Username</label>
+        <label htmlFor="username">Username👼🏽</label>
         <input
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
         />
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email">Email💌</label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-        <label htmlFor="password">Password</label>
+        <label htmlFor="password">Password🔐</label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        {/* <label htmlFor="avatar">Avatar (optional)</label>
-        <input
-          type="text"
-          value={avatar}
-          onChange={(e) => setAvatar(e.target.value)}
-          placeholder="https://i.pravatar.cc/200"
-        /> */}
-        
         
         <button type="button" onClick={() => setShowAvatarSelection(!showAvatarSelection)}>
           {showAvatarSelection ? 'Close Avatars' : 'Choose Avatar'}
@@ -131,7 +123,7 @@ const Register = () => {
           </div>
         )}
 
-        <button type="submit">Register</button>
+        <button type="submit">R e g i s t e r👼🏽</button>
       </form>
       {error && <p className="error" style={{ color: 'red' }}>{error}</p>}
       {successMessage && <p className="success" style={{ color: 'green' }}>{successMessage}</p>}
@@ -141,4 +133,5 @@ const Register = () => {
 };
 
 export default Register;
+
 
