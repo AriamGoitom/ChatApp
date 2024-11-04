@@ -13,36 +13,22 @@ const Login = () => {
     setError('');
     try {
       const response = await axios.post('https://chatify-api.up.railway.app/auth/token', {
-        username,
-        password
+        username: username,
+        password: password,
+        csrfToken: ''
       });
 
-      console.log('Response data:', response.data); // Log the response to check if a token is returned
-
       if (response.status === 200) {
-        const { token, userId, avatar } = response.data;
+        const { token } = response.data;
 
-         // Check if token exists
-        if (token) {
-          // Save user data in localStorage
-          localStorage.setItem('user', JSON.stringify({
-            userId,
-            username,
-            avatar,
-            token
-          }));
+        localStorage.setItem('user', JSON.stringify({
+          username,
+          token
+        }));
 
-          // Confirm data was saved correctly
-          console.log('Saved to localStorage:', JSON.parse(localStorage.getItem('user')));
-
-          // Navigate to the chat page
-          navigate('/chat');
-        } else {
-          setError('No token received from server');
-        }
+        navigate('/chat');
       }
     } catch (error) {
-      console.error('Login error:', error);
       if (error.response && error.response.status === 401) {
         setError('Invalid credentials');
       } else {
@@ -53,16 +39,16 @@ const Login = () => {
 
   return (
     <div className="auth-form-container">
-      <h2>L o g i n</h2>
+      <h2>Login</h2>
       <form className="login-form" onSubmit={handleSubmit}>
-        <label htmlFor="username">Username👼🏽</label>
+        <label htmlFor="username">Username</label>
         <input
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
         />
-        <label htmlFor="password">Password🔐</label>
+        <label htmlFor="password">Password</label>
         <input
           type="password"
           value={password}

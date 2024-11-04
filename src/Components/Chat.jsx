@@ -1,146 +1,70 @@
-import React, { useState, useEffect, useRef } from "react";
-import DOMPurify from "dompurify";
+import React, { useState, useEffect } from 'react';
+import { fetchMessages, sendMessage, deleteMessage } from './api';
+import '../App.css';
 
-const Chat = () => {
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
-  const endOfMessagesRef = useRef(null); // Reference to scroll to the bottom
+const Chat = ({ conversationId, userId, csrfToken }) => {
+    const [messages, setMessages] = useState([]);
+    const [newMessage, setNewMessage] = useState('');
+    const [refreshMessages, setRefreshMessages] = useState(false);
+    const [deleting, setDeleting] = useState(false);  // State to manage deleting status
 
-  const authData = JSON.parse(localStorage.getItem("user"));
-  const token = authData?.token;
-  const username = authData?.username;
-  const avatar = authData?.avatar;
-  const userId = authData?.userId;
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            const loadMessages = async () => {
+                const msgs = await fetchMessages(conversationId, csrfToken);
+                setMessages(msgs);
+            };
 
-  // Fetch messages when the component mounts
-  useEffect(() => {
-    const fetchMessages = async () => {
-      if (!token) {
-        console.error("No token found in authData");
-        return;
-      }
-      
-      setLoading(true); // Start loading
+            loadMessages();
+        }, 5000);
 
-      try {
-        const response = await fetch("https://chatify-api.up.railway.app/messages", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        return () => clearInterval(intervalId);
+    }, [conversationId, csrfToken]);
 
-        if (response.ok) {
-          const data = await response.json();
-          setMessages(data);
-        } else {
-          setErrorMessage("Failed to fetch messages.");
-          console.error("Failed to fetch messages:", response.statusText);
+    const handleSendMessage = async () => {
+        if (newMessage.trim()) {
+            try {
+                await sendMessage(conversationId, newMessage, csrfToken);
+                setNewMessage('');
+                setRefreshMessages(prev => !prev);
+            } catch (error) {
+                console.error('Failed to send message:', error);
+            }
         }
-      } catch (error) {
-        setErrorMessage("Error fetching messages.");
-        console.error("Failed to fetch messages:", error);
-      } finally {
-        setLoading(false); // End loading
-      }
     };
 
-    fetchMessages();
-  }, [token]);
+    const handleDeleteMessage = async (messageId) => {
+        setDeleting(true);  // Activate deleting status
+        try {
+            await deleteMessage(conversationId, messageId, csrfToken);
+            setTimeout(() => setDeleting(false), 1000);  // Turn off deleting status after a delay
+            setRefreshMessages(prev => !prev);
+        } catch (error) {
+            console.error('Failed to delete message:', error);
+            setDeleting(false);
+        }
+    };
 
-  // Scroll to the bottom when messages change
-  useEffect(() => {
-    endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  // Send a new message
-  const handleSendMessage = async () => {
-    if (newMessage.trim() === "") return;
-
-    const sanitizedMessage = DOMPurify.sanitize(newMessage);
-    setLoading(true);
-
-    try {
-      const response = await fetch("https://chatify-api.up.railway.app/messages", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ content: sanitizedMessage }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setMessages((prevMessages) => [...prevMessages, data]);
-        setNewMessage("");
-      } else {
-        setErrorMessage("Failed to send message.");
-        console.error("Failed to send message:", response.statusText);
-      }
-    } catch (error) {
-      setErrorMessage("Error sending message.");
-      console.error("Failed to send message:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Delete a message
-  const handleDeleteMessage = async (messageId) => {
-    try {
-      const response = await fetch(`https://chatify-api.up.railway.app/messages/${messageId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        setMessages((prevMessages) => prevMessages.filter((msg) => msg.id !== messageId));
-        console.log("Message deleted:", messageId);
-      } else {
-        console.error("Failed to delete message:", response.statusText);
-      }
-    } catch (error) {
-      console.error("Failed to delete message:", error);
-    }
-  };
-
-  return (
-    <div>
-      <h2>Chat</h2>
-      {avatar && <img src={avatar} alt="Avatar" />}
-      <p>{username}</p>
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-      <div>
-        {loading ? (
-          <p>Loading messages...</p>
-        ) : (
-          messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={msg.userId === userId ? "my-message" : "other-message"}
-              style={{ display: "flex", justifyContent: msg.userId === userId ? "flex-end" : "flex-start" }}
-            >
-              <div>
-                {msg.userId !== userId && <img src={msg.avatar || 'https://i.pravatar.cc/100'} alt={msg.username} style={{ width: '30px', borderRadius: '50%' }} />}
-                <p>{msg.text}</p>
-                {msg.userId === userId && (
-                  <button onClick={() => handleDeleteMessage(msg.id)}>Delete</button>
-                )}
-              </div>
+    return (
+        <div>
+            {deleting && <div className="deleting-message">Deleting...</div>}
+            <div className="chat-messages-container">
+                {messages.map((msg) => (
+                    <div key={msg.id} className={`chat-message ${msg.userId === userId ? 'my-message' : 'other-message'}`}>
+                        <p>{msg.text}</p>
+                        <button onClick={() => handleDeleteMessage(msg.id)}>Delete</button>
+                    </div>
+                ))}
             </div>
-          ))
-        )}
-        <div ref={endOfMessagesRef} /> {/* Scroll to this div */}
-      </div>
-      <input
-        type="text"
-        value={newMessage}
-        onChange={(e) => setNewMessage(e.target.value)}
-        placeholder="Type a message"
-      />
-      <button onClick={handleSendMessage} disabled={loading}>Send</button>
-    </div>
-  );
+            <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type a message"
+            />
+            <button className='send-button' onClick={handleSendMessage}>Send</button>
+        </div>
+    );
 };
 
 export default Chat;

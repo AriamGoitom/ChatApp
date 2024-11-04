@@ -18,7 +18,7 @@
 }
 
 .sidebar {
-    margin-right: 315px;
+    margin-right: 0px;
 }
 
 @media screen and (min-width: 600px) {
@@ -26,13 +26,13 @@
         padding: 5rem;
         border: 1px solid white;
         border-radius: 10px;
-        margin: 0,5rem;
+        margin: 0.5rem;
     }
 }
 
 label {
-text-align: left;
-padding: 0.25rem 0;
+    text-align: left;
+    padding: 0.25rem 0;
 }
 
 input {
@@ -58,35 +58,170 @@ button {
 }
 
 .nav-item {
-    color:#7439db
+    color: #7439db;
 }
 
+.page-container {
+    display: flex;
+    height: 100vh; /* Adjust as needed */
+}
 
-   .my-message {
-    background-color: #d1ffd1;
+.left-column {
+    flex: 1; /* Adjust the number to change the width */
+    border-right: 1px solid #ddd; /* Optional: to separate columns */
+    padding: 16px; /* Optional: for spacing */
+}
+
+.right-column {
+    flex: 2; /* Adjust the number to change the width */
+    padding: 16px; /* Optional: for spacing */
+    overflow-y: auto;
+}
+
+.chat-messages-container {
+    max-height: 400px; /* Set the desired height limit */
+    overflow-y: auto;
+    border: 1px solid #ddd; /* Optional: border for visual separation */
+    padding: 8px; /* Optional: spacing inside the container */
+    margin-bottom: 10px; /* Space below the container */
+    position: relative; /* Needed for absolute positioning of children */
+}
+
+.chat-message {
+    position: relative; /* Establishes a positioning context for positioning the delete button */
+    background-color: #f1f1f1; /* Example background color */
+    padding: 10px; /* Padding around the text */
+    border-radius: 10px; /* Rounded corners */
+    margin: 5px;
+    max-width: 60%;
+    overflow: hidden; /* Ensures no overflow of content */
+}
+
+.my-message {
+    background-color: #d1ffd1; /* Light green background for user's messages */
     padding: 10px;
     border-radius: 10px;
     margin: 5px;
     max-width: 60%;
-  }
-  
-  .other-message {
-    background-color: #f1f1f1;
+    margin-left: auto; /* Align to right */
+}
+
+.other-message {
+    background-color: #f1f1f1; /* Light grey background for others' messages */
     padding: 10px;
     border-radius: 10px;
     margin: 5px;
     max-width: 60%;
-  }
-  
-  button {
+    margin-right: auto; /* Align to left */
+}
+
+button {
     margin-left: 10px;
     padding: 5px;
     background-color: red;
     color: white;
     border: none;
     cursor: pointer;
-  }
-  
-  button:hover {
+}
+
+button:hover {
     background-color: darkred;
-  }
+}
+
+.user-list-container {
+    max-height: 400px; /* Set the desired height limit */
+    overflow-y: auto;
+    list-style: none; /* Removes default list styling */
+    padding: 0; /* Removes default padding */
+}
+
+.user-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 10px;
+}
+
+.avatar {
+    width: 20px;
+    height: 20px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+button.delete-button {
+    position: absolute; /* Position absolutely within the relative parent */
+    top: 5px; /* Spacing from the top edge of the container */
+    left: 5px; /* Spacing from the left edge of the container */
+    width: 20px; /* Width of the button */
+    height: 20px; /* Height of the button */
+    padding: 0; /* Remove padding */
+    background-color: red; /* Button color */
+    color: white; /* Text color */
+    border: none; /* No border */
+    border-radius: 50%; /* Rounded shape */
+    cursor: pointer; /* Pointer cursor on hover */
+    display: flex; /* Align the content (X) in the center */
+    align-items: center; /* Center alignment vertically */
+    justify-content: center; /* Center alignment horizontally */
+    font-weight: bold; /* Bold font for the cross symbol */
+}
+
+button.delete-button:hover {
+    background-color: darkred; /* Darker red on hover for better UX */
+}
+
+button.delete-button:before {
+    content: '×'; /* Unicode multiplication sign as the cross */
+    font-size: 12px; /* Smaller font size for the cross symbol */
+}
+
+.deleting-message {
+    color: red;
+    animation: blink-animation 1s steps(5, start) infinite;
+    -webkit-animation: blink-animation 1s steps(5, start) infinite;
+}
+
+@keyframes blink-animation {
+    to {
+        visibility: hidden;
+    }
+}
+
+@-webkit-keyframes blink-animation {
+    to {
+        visibility: hidden;
+    }
+}
+
+.conversation-container {
+    border: 1px solid #ccc;  /* Example: light gray border */
+    background-color: #f9f9f9;  /* Example: light gray background */
+    margin: 10px 0;  /* Add some space between each conversation block */
+    padding: 10px;  /* Padding inside the container */
+    border-radius: 5px;  /* Optional: rounded corners for a smoother look */
+}
+
+.invitation-container {
+    border: 1px solid #ccc;  /* Example: light gray border */
+    background-color: #b9b9b9;  /* Example: light gray background */
+    margin: 10px 0;  /* Add some space between each conversation block */
+    padding: 10px;  /* Padding inside the container */
+    border-radius: 5px;  /* Optional: rounded corners for a smoother look */
+}
+
+.chat-container {
+    border: 1px solid #ccc;  /* Example: light gray border */
+    background-color: #f9f9f9;  /* Example: light gray background */
+    margin: 10px 0;  /* Add some space between each conversation block */
+    padding: 10px;  /* Padding inside the container */
+    border-radius: 5px;  /* Optional: rounded corners for a smoother look */
+}
+.user-container {
+    border: 1px solid #ccc;  /* Example: light gray border */
+    background-color: #b9b9b9;  /* Example: light gray background */
+    margin: 10px 0;  /* Add some space between each conversation block */
+    padding: 10px;  /* Padding inside the container */
+    border-radius: 5px;  /* Optional: rounded corners for a smoother look */
+}
